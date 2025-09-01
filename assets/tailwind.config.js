@@ -1,14 +1,17 @@
 // See the Tailwind configuration guide for advanced usage
 // https://tailwindcss.com/docs/configuration
 
+
 const plugin = require("tailwindcss/plugin")
+
 const fs = require("fs")
 const path = require("path")
 
 module.exports = {
   content: [
      "./js/**/*.js",
-    "../lib/customer_panel_web/**/*.{heex,leex,ex}"
+    "../lib/customer_panel_web/**/*.{heex,leex,ex}",
+    "./node_modules/@tremor/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
     extend: {
@@ -17,6 +20,7 @@ module.exports = {
       }
     },
   },
+  
   plugins: [
     require("@tailwindcss/forms"),
     // Allows prefixing tailwind classes with LiveView classes to add rules

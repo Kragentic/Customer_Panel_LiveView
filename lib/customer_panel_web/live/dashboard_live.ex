@@ -38,17 +38,36 @@ defmodule CustomerPanelWeb.DashboardLive do
     chart_data = %{
       labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
       datasets: [
-        %{label: "uv", data: [400, 300, 200, 278, 189, 239, 349], borderColor: "#8884d8", backgroundColor: "rgba(136,132,216,0.2)", borderWidth: 2, tension: 0.4},
-        %{label: "pv", data: [240, 139, 980, 390, 480, 380, 430], borderColor: "#82ca9d", backgroundColor: "rgba(130,202,157,0.2)", borderWidth: 2, tension: 0.4}
+        %{label: "uv", data: [400, 300, 200, 278, 189, 239, 349], borderColor: "#8884d8", borderWidth: 2, tension: 0.4},
+        %{label: "pv", data: [240, 139, 980, 390, 480, 380, 430], borderColor: "#82ca9d", borderWidth: 2, tension: 0.4}
       ]
     }
+
+    tremor_line_rows =
+      chart_data.labels
+      |> Enum.with_index()
+      |> Enum.map(fn {label, i} ->
+        %{
+          "month" => label,
+          "uv" => Enum.at(Enum.at(chart_data.datasets, 0).data, i),
+          "pv" => Enum.at(Enum.at(chart_data.datasets, 1).data, i)
+        }
+      end)
+    tremor_line_cats = ["uv", "pv"]
 
     bar_data = %{
       labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
       datasets: [
-        %{label: "sales", data: [4000, 3000, 2000, 2780, 1890, 2390, 3490], backgroundColor: "#8884d8"}
+        %{label: "sales", data: [4000, 3000, 2000, 2780, 1890, 2390, 3490]}
       ]
     }
+
+    tremor_sales_rows =
+      bar_data.labels
+      |> Enum.with_index()
+      |> Enum.map(fn {label, i} -> %{"month" => label, "sales" => Enum.at(hd(bar_data.datasets).data, i)} end)
+
+    tremor_sales_cats = ["sales","demo"]
 
     {:ok,
      assign(socket,
@@ -58,7 +77,11 @@ defmodule CustomerPanelWeb.DashboardLive do
        selected_rows: [],
        map_points: map_points,
        chart_data: chart_data,
-       bar_data: bar_data
+       tremor_line_rows: tremor_line_rows,
+       tremor_line_cats: tremor_line_cats,
+       bar_data: bar_data,
+       tremor_sales_rows: tremor_sales_rows,
+       tremor_sales_cats: tremor_sales_cats
      )}
   end
 
@@ -88,25 +111,25 @@ defmodule CustomerPanelWeb.DashboardLive do
           <div id="heatmap" data-points={Jason.encode!(@map_points)} phx-hook="LeafletMap" class="h-[380px] rounded-lg overflow-hidden"></div>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[450px]">
-          <div class="h-[400px] rounded-lg overflow-hidden">
-            <.data_table
-              id="dashboard-table"
-              title="Recent activities"
-              rows={@rows}
-              columns={@columns}
-              selected_rows={@selected_rows}
-              row_click_event="row_click"
-            />
-          </div>
+          <.tremor_table id="dashboard-table" title="Recent activities" rows={@rows} columns={@columns} />
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-6 mt-[30px]">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[450px]">
-          <.line_chart id="trends-chart" title="Trends" data={@chart_data} />
+          <.tremor_line_chart id="trends-chart" title="Trends" rows={@tremor_line_rows} index="month" categories={@tremor_line_cats} />
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[450px]">
-          <.bar_chart id="sales-chart" title="Monthly Sales" data={@bar_data} />
+ 
+  
+        <div class=" bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[450px] ">
+<.tremor_bar_chart
+  id="sales-chart"
+  title="Monthly Sales"
+  rows={@tremor_sales_rows}
+  index="month"
+  categories={["sales", "demo"]}
+  colors={["red", "blue"]}
+/>
         </div>
       </div>
     </div>

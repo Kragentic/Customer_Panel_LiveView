@@ -16,11 +16,17 @@
 //
 
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
+import '@tremor/react/dist/esm/tremor.css';
+
 import "phoenix_html"
 // Establish Phoenix Socket and LiveView configuration.
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
+import React from "react"
+import { createRoot } from "react-dom/client"
+import { BarChart as TremorBarChart, LineChart as TremorLineChart, Table as TremorTable, TableHead as TremorTableHead, TableRow as TremorTableRow, TableHeaderCell as TremorTableHeaderCell, TableBody as TremorTableBody, TableCell as TremorTableCell } from "@tremor/react"
+// Tremor CSS is provided via CDN in the root layout to avoid bundler CSS import issues.
 
 // LiveView Hooks
 let Hooks = {};
@@ -131,6 +137,106 @@ Hooks.FullCalendarPanel = {
   }
 };
 
+Hooks.TremorBar = {
+  mounted() {
+    
+    const cfg = this._parse();
+     console.log("TremorBar mounted!",cfg); 
+    this._root = createRoot(this.el);
+    this._render(cfg);
+  },
+  updated() {
+    if (!this._root) return;
+    const cfg = this._parse();
+    this._render(cfg);
+  },
+  destroyed() {
+    if (this._root) this._root.unmount();
+  },
+  _parse() {
+    try { return JSON.parse(this.el.dataset.chart || '{}'); } catch (_e) { return {}; }
+  },
+
+ 
+  _render(cfg) {
+     console.log("cfg",cfg.colors);
+    this._root.render(React.createElement(TremorBarChart, {
+      data: cfg.data || [],
+      index: cfg.index,
+      categories: cfg.categories || [],
+      colors: Array.isArray(cfg.colors) ? cfg.colors : (cfg.colors ? [String(cfg.colors)] : ["red","yellow"]),
+      className: cfg.className || "h-80 w-full"
+    }));
+  }
+};
+
+
+Hooks.TremorLine = {
+  mounted() {
+    const cfg = this._parse();
+    this._root = createRoot(this.el);
+    this._render(cfg);
+  },
+  updated() {
+    if (!this._root) return;
+    const cfg = this._parse();
+    this._render(cfg);
+  },
+  destroyed() {
+    if (this._root) this._root.unmount();
+  },
+  _parse() {
+    try { return JSON.parse(this.el.dataset.chart || '{}'); } catch (_e) { return {}; }
+  },
+  _render(cfg) {
+    this._root.render(React.createElement(TremorLineChart, {
+      data: cfg.data || [],
+      index: cfg.index,
+      categories: cfg.categories || [],
+      colors: Array.isArray(cfg.colors) ? cfg.colors : (cfg.colors ? [String(cfg.colors)] : ["blue"]),
+      className: cfg.className || "h-80 w-full"
+    }));
+  }
+};
+
+Hooks.TremorTable = {
+  mounted() {
+    const cfg = this._parse();
+    this._root = createRoot(this.el);
+    this._render(cfg);
+  },
+  updated() {
+    if (!this._root) return;
+    const cfg = this._parse();
+    this._render(cfg);
+  },
+  destroyed() {
+    if (this._root) this._root.unmount();
+  },
+  _parse() {
+    try { return JSON.parse(this.el.dataset.table || '{}'); } catch (_e) { return {}; }
+  },
+  _render(cfg) {
+    const cols = (cfg.columns || []).map(c => ({ key: String(c.key || c), label: c.label || String(c.key || c) }));
+    const header = React.createElement(TremorTableHead, null,
+      React.createElement(TremorTableRow, null,
+        ...cols.map(c => React.createElement(TremorTableHeaderCell, { key: c.key }, c.label))
+      )
+    );
+    const body = React.createElement(TremorTableBody, null,
+      ...(cfg.rows || []).map((row, idx) => {
+        const key = row.id ?? idx;
+        return React.createElement(TremorTableRow, { key },
+          ...cols.map(c => React.createElement(TremorTableCell, { key: c.key }, String(row[c.key] ?? "")))
+        );
+      })
+    );
+    this._root.render(
+      React.createElement(TremorTable, { className: cfg.className || "w-full" }, header, body)
+    );
+  }
+};
+
 Hooks.BarChart = {
   mounted() {
     if (!(window.Chart && this.el)) { console.error("Chart.js not loaded"); return; }
@@ -181,7 +287,13 @@ Hooks.BarChart = {
     };
   },
   _normalizeDataset(ds) {
-    return Object.assign({ label: ds.label || '', data: ds.data || [], backgroundColor: ds.backgroundColor || 'rgba(59,130,246,0.5)' }, ds);
+    return Object.assign({
+      label: ds.label || '',
+      data: ds.data || [],
+      backgroundColor: ds.backgroundColor || 'rgba(56,189,248,0.5)', // sky-400 @ 50%
+      borderColor: ds.borderColor || '#38bdf8', // sky-400
+      borderWidth: ds.borderWidth ?? 1
+    }, ds);
   }
 };
 
