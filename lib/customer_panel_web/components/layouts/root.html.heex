@@ -8,7 +8,6 @@
       {assigns[:page_title]}
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
-    <link rel="stylesheet" href="https://unpkg.com/@tremor/react/dist/esm/tremor.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" />
@@ -17,7 +16,7 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}></script>
   </head>
 
-  <body class="tremor bg-gray-50">
+  <body class="bg-gray-50">
     <div class="flex min-h-screen">
       <!-- Sidebar -->
       <CustomerPanelWeb.SidebarComponent.sidebar active_path={@conn.request_path} />
